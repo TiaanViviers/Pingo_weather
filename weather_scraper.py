@@ -1,85 +1,74 @@
 """
 Weather scraper using OpenWeatherMap API key
 
-Program takes longitude and lattitude as command line input parameters
-and produces temperature, wind and rain metrics of the last hour
+Program takes longitude and latitude as command line input parameters
+and produces temperature, wind, and rain metrics of the next 3 hours
 
 to execute:
-python3 weather_scraper.py <logitude> <latitude>
+python3 weather_scraper.py <longitude> <latitude>
 
 """
 import requests
 import sys
+from datetime import datetime
 
 
-# Function to retrieve weather status from OpenWeatherMap
-def get_weather(longitude, latitude, api_key):
+# Function to retrieve weather forecast from OpenWeatherMap Forecast API
+def get_forecast(longitude, latitude, api_key):
     # Define the API endpoint
-    url = f"http://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={api_key}&units=metric"
+    url = f"http://api.openweathermap.org/data/2.5/forecast?lat={latitude}&lon={longitude}&appid={api_key}&units=metric"
     
     # Send a GET request to the API
     response = requests.get(url)
     
     if response.status_code == 200:
-        weather_data = response.json()
-        return weather_data
+        forecast_data = response.json()
+        return forecast_data
     else:
         print(f"Response Text: {response.text}")
         return None
 
 
-# Function to extract and print weather information
-def print_weather_info(weather):
-    if weather:
-        print("Weather as of the last hour:")
-        print()
-
-        # temperature data
-        temp = weather['main']['temp']
-        temp_min = weather['main']['temp_min']
-        temp_max = weather['main']['temp_max']
-        print(f"Current Temperature: {temp}°C")
-        print(f"Min Temperature: {temp_min}°C")
-        print(f"Max Temperature: {temp_max}°C")
+# Function to extract and print forecast information
+def print_forecast_info(forecast):
+    if forecast:
+        print("Weather forecast for the next 3 hours:")
         print()
         
-        # wind data
-        wind_speed = weather['wind']['speed']
-        wind_deg = weather['wind']['deg']
+        # Get the forecast for the next 3 hours (first entry)
+        next_3_hours_forecast = forecast['list'][0]  # The first entry is the forecast for the next 3 hours
+        
+        # Wind data
+        wind_speed = next_3_hours_forecast['wind']['speed']
         print(f"Wind Speed: {wind_speed} m/s")
-        print(f"Wind Direction: {wind_deg}°")
         print()
         
-        # rain data
-        rain_1h = weather.get('rain', {}).get('1h', 'No data')
-        if rain_1h == 'No data' :
-            print(f"Rain Volume (last 1 hour): 0 mm")
-        else: 
-            print(f"Rain Volume (last 1 hour): {rain_1h} mm")
+        # Rain data
+        rain_3h = next_3_hours_forecast.get('rain', {}).get('3h', 0)
+        print(f"Rain Volume (next 3 hours): {rain_3h} mm")
         print()
 
-        # general weather description
-        weather_description = weather['weather'][0]['description']
+        # General weather description
+        weather_description = next_3_hours_forecast['weather'][0]['description']
         print(f"Weather Description: {weather_description}")
 
     else:
-        print("Failed to retrieve weather data")
-
-
+        print("Failed to retrieve forecast data")
 
 def main():
-    # read cmd args for lon, lat
+    # Read command-line args for lon, lat
     if len(sys.argv) == 3:
-        longitude = sys.argv[1]     # Durbanville: 18.647499
-        latitude = 	sys.argv[2]     # -33.832500
-    else: 
+        longitude = sys.argv[1]  # Example: 18.647499
+        latitude = sys.argv[2]   # Example: -33.832500
+    else:
         print("Please enter valid Longitude, Latitude arguments")
         sys.exit()
 
-    api_key = "b21fc0b0e6006ec6b0c62372da738631"  #OpenWeatherMap API key
+    api_key = "b21fc0b0e6006ec6b0c62372da738631"
 
-    weather = get_weather(longitude, latitude, api_key)
-    print_weather_info(weather)
+    forecast = get_forecast(longitude, latitude, api_key)
+    print_forecast_info(forecast)
+
 
 if __name__ == "__main__":
     main()
