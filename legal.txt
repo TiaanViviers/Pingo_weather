@@ -1,0 +1,7 @@
+OpenWeatherMap Free Tier Usage Limits
+
+Rate Limits:
+API Calls Per Minute: Up to 60 calls per minute.
+API Calls Per Month: Up to 1,000,000 calls per month.
+
+Can do 333 333 API calls per day per month
